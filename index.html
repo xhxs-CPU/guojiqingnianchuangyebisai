@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>国际青年创业大赛 - 电子证书查询</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;background:#f5f7fa;min-height:100vh;color:#333}
+.header-banner{background:linear-gradient(135deg,#0a2463 0%,#1e3a8a 25%,#2563eb 55%,#3b82f6 80%,#60a5fa 100%);height:220px;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+.header-banner::before{content:'';position:absolute;top:-50%;left:-20%;width:80%;height:200%;background:linear-gradient(120deg,transparent 30%,rgba(255,255,255,0.06) 50%,transparent 70%);transform:rotate(15deg)}
+.header-banner::after{content:'';position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(ellipse at 20% 80%,rgba(96,165,250,0.3) 0%,transparent 50%),radial-gradient(ellipse at 80% 20%,rgba(37,99,235,0.4) 0%,transparent 50%)}
+.banner-deco{position:absolute;border:1px solid rgba(255,255,255,0.1);border-radius:50%}
+.banner-deco.d1{width:300px;height:300px;top:-100px;right:-50px}
+.banner-deco.d2{width:200px;height:200px;bottom:-80px;left:10%}
+.banner-deco.d3{width:150px;height:150px;top:30%;left:5%;border-style:dashed}
+.banner-title{text-align:center;position:relative;z-index:2}
+.banner-title .main-title{font-family:"Ma Shan Zheng","STKaiti","KaiTi","华文行楷",cursive;font-size:64px;color:#fff;font-weight:bold;letter-spacing:12px;text-shadow:2px 4px 12px rgba(0,0,0,0.25);margin-bottom:6px;line-height:1.2}
+.banner-title .sub-title{font-size:28px;color:rgba(255,255,255,0.92);letter-spacing:6px;font-style:italic;font-weight:300}
+.banner-title .divider{width:120px;height:2px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.6),transparent);margin:10px auto}
+.container{max-width:720px;margin:-60px auto 40px;padding:0 20px;position:relative;z-index:2}
+.form-card{background:#fff;border-radius:16px;box-shadow:0 8px 32px rgba(0,0,0,0.1);padding:36px 40px}
+.form-card h1{font-size:24px;color:#1e3a8a;text-align:center;margin-bottom:6px}
+.form-card .subtitle{text-align:center;color:#888;font-size:13px;margin-bottom:28px}
+.error-banner{display:none;background:#fef2f2;border:1px solid #fecaca;color:#dc2626;padding:12px 16px;border-radius:8px;font-size:14px;margin-bottom:24px;text-align:center}
+.error-banner.show{display:block}
+.form-group{margin-bottom:20px}
+.form-group label{display:block;font-size:14px;font-weight:600;color:#374151;margin-bottom:7px}
+.form-group label .en{color:#9ca3af;font-weight:400;font-size:12px;margin-left:6px}
+.form-group label .required{color:#ef4444;margin-right:4px}
+.form-group input,.form-group select{width:100%;padding:11px 14px;border:1.5px solid #d1d5db;border-radius:8px;font-size:14px;transition:all .2s;background:#fff;outline:none}
+.form-group input:focus,.form-group select:focus{border-color:#3b82f6;box-shadow:0 0 0 3px rgba(59,130,246,.1)}
+.form-group input.match{border-color:#10b981;background:#f0fdf4}
+.form-group input.mismatch{border-color:#ef4444;background:#fef2f2}
+.radio-group{display:flex;gap:10px;flex-wrap:wrap}
+.radio-option{flex:1;min-width:140px;border:1.5px solid #d1d5db;border-radius:8px;padding:10px 12px;cursor:pointer;transition:all .2s;text-align:center;font-size:13px}
+.radio-option:hover{border-color:#3b82f6}
+.radio-option.selected{border-color:#3b82f6;background:#eff6ff;color:#1d4ed8;font-weight:600}
+.radio-option.match{border-color:#10b981;background:#f0fdf4;color:#047857}
+.radio-option.mismatch{border-color:#ef4444;background:#fef2f2}
+.radio-option input{display:none}
+.field-status{font-size:12px;margin-top:5px;display:none}
+.field-status.show{display:block}
+.field-status.match{color:#10b981}
+.field-status.mismatch{color:#ef4444}
+.submit-btn{width:100%;padding:14px;background:#2563eb;color:#fff;border:none;border-radius:8px;font-size:16px;font-weight:600;cursor:pointer;transition:all .2s;margin-top:8px}
+.submit-btn:hover:not(:disabled){background:#1d4ed8;transform:translateY(-1px);box-shadow:0 4px 12px rgba(37,99,235,.3)}
+.submit-btn:disabled{background:#cbd5e1;cursor:not-allowed}
+.cert-page{display:none}
+.cert-page.show{display:block}
+.form-page.hide{display:none}
+.welcome-bar{background:#fff;border-radius:12px;padding:18px 24px;margin-bottom:24px;box-shadow:0 2px 12px rgba(0,0,0,.06);display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.welcome-bar .text{font-size:15px;color:#374151}
+.welcome-bar .text strong{color:#1e3a8a;font-size:17px}
+.back-btn{padding:8px 20px;background:#f3f4f6;color:#4b5563;border:none;border-radius:6px;font-size:14px;cursor:pointer;transition:all .2s}
+.back-btn:hover{background:#e5e7eb}
+.cert-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:22px}
+.cert-card{background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 12px rgba(0,0,0,.08);cursor:pointer;transition:all .3s}
+.cert-card:hover{transform:translateY(-4px);box-shadow:0 12px 28px rgba(0,0,0,.14)}
+.cert-card .cert-img-wrap{width:100%;aspect-ratio:3/4;overflow:hidden;background:#f0f4ff}
+.cert-card .cert-img-wrap img{width:100%;height:100%;object-fit:cover}
+.cert-card .cert-info{padding:14px;text-align:center}
+.cert-card .cert-name{font-size:15px;font-weight:600;color:#1e3a8a;margin-bottom:3px}
+.cert-card .cert-desc{font-size:12px;color:#888}
+.no-cert{text-align:center;padding:60px 20px;color:#9ca3af;background:#fff;border-radius:12px}
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);z-index:1000;justify-content:center;align-items:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal{background:#fff;border-radius:16px;max-width:560px;width:100%;max-height:90vh;overflow-y:auto;position:relative}
+.modal-close{position:absolute;top:12px;right:12px;width:36px;height:36px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;border:none;font-size:20px;cursor:pointer;z-index:10;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:rgba(0,0,0,.7)}
+.modal-body{padding:24px}
+.modal-body .cert-large{width:100%;border-radius:8px;margin-bottom:18px;box-shadow:0 4px 16px rgba(0,0,0,.1)}
+.modal-body .cert-title{font-size:19px;font-weight:600;color:#1e3a8a;text-align:center;margin-bottom:18px}
+.download-btns{display:flex;gap:10px}
+.download-btn{flex:1;padding:13px;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:6px}
+.download-btn.png{background:#2563eb;color:#fff}
+.download-btn.png:hover{background:#1d4ed8}
+.download-btn.pdf{background:#ef4444;color:#fff}
+.download-btn.pdf:hover{background:#dc2626}
+.footer{text-align:center;padding:20px;color:#9ca3af;font-size:12px}
+@media(max-width:640px){.header-banner{height:160px}.banner-title .main-title{font-size:38px;letter-spacing:6px}.banner-title .sub-title{font-size:18px;letter-spacing:3px}.form-card{padding:24px 18px}.radio-group{flex-direction:column}.download-btns{flex-direction:column}}
+</style>
+</head>
+<body>
+<div class="header-banner">
+<div class="banner-deco d1"></div><div class="banner-deco d2"></div><div class="banner-deco d3"></div>
+<div class="banner-title"><div class="main-title">星禾跨境</div><div class="divider"></div><div class="sub-title">StarRiver</div></div>
+</div>
+<div class="container">
+<div class="form-page" id="formPage">
+<div class="form-card">
+<h1>国际青年创业大赛 - 电子证书查询</h1>
+<p class="subtitle">请填写与报名时一致的信息以查询您的电子证书</p>
+<div class="error-banner" id="errorBanner">填写错误，请与报名信息一致</div>
+<form id="certForm" onsubmit="return false;">
+<div class="form-group"><label><span class="required">*</span>报名赛道<span class="en">Sign up for the race</span></label>
+<div class="radio-group" id="trackGroup">
+<div class="radio-option" data-value="直播赛道" onclick="selectRadio('track',this)"><input type="radio" name="track" value="直播赛道">直播赛道 Live Streaming Track</div>
+<div class="radio-option" data-value="创业赛道" onclick="selectRadio('track',this)"><input type="radio" name="track" value="创业赛道">创业赛道 Startup Track</div>
+</div><div class="field-status" id="track-status"></div></div>
+<div class="form-group"><label><span class="required">*</span>护照姓名<span class="en">Passport Name</span></label><input type="text" id="passportName" placeholder="请输入护照姓名（拼音大写）" oninput="validateForm()"><div class="field-status" id="passportName-status"></div></div>
+<div class="form-group"><label><span class="required">*</span>护照号<span class="en">Passport Number</span></label><input type="text" id="passportNumber" placeholder="请输入护照号" oninput="validateForm()"><div class="field-status" id="passportNumber-status"></div></div>
+<button type="submit" class="submit-btn" id="submitBtn" disabled onclick="submitForm()">查询证书</button>
+</form></div></div>
+<div class="cert-page" id="certPage">
+<div class="welcome-bar"><div class="text">您好，<strong id="welcomeName">同学</strong>，以下是您的电子证书</div><button class="back-btn" onclick="goBack()">返回重新查询</button></div>
+<div id="certContent"></div></div></div>
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOutside(event)">
+<div class="modal"><button class="modal-close" onclick="closeModal()">×</button>
+<div class="modal-body"><div class="cert-title" id="modalCertName">证书名称</div>
+<img class="cert-large" id="modalCertImg" src="" alt="证书">
+<div class="download-btns"><button class="download-btn png" onclick="downloadPNG()">下载原图（PNG）</button><button class="download-btn pdf" onclick="downloadPDF()">下载PDF版</button></div></div></div></div>
+<div class="footer">© 2026 第一届国际青年创业大赛组织委员会</div>
+<script>
+const playerDatabase=[{"track":"直播赛道","passportName":"WANG GUORUI","chineseName":"王国蕊","passportNumber":"E12345678","nationality":"中国","status":"在读学生","university":"某某大学","grade":"大三","major":"国际经济与贸易","wechat":"wangguorui123","phone":"13800138001","email":"wangguorui@example.com","certificates":[{"name":"参赛证书","desc":"国际青年创业大赛参赛证明","img":"https://aka.doubaocdn.com/s/G8ZOpNO8Ni"}]}];
+const allFields=['track','passportName','passportNumber'];
+let formState={track:''},matchedPlayer=null,currentCert=null;
+function selectRadio(field,el){const g=el.parentElement;g.querySelectorAll('.radio-option').forEach(o=>o.classList.remove('selected'));el.classList.add('selected');el.querySelector('input').checked=true;formState[field]=el.dataset.value;validateForm();}
+function getFormValues(){return{track:formState.track,passportName:document.getElementById('passportName').value.trim(),passportNumber:document.getElementById('passportNumber').value.trim()};}
+function strMatch(a,b){if(a===undefined||b===undefined)return false;return a.trim().toLowerCase()===b.trim().toLowerCase();}
+function validateForm(){const values=getFormValues();let candidates=playerDatabase.slice();const status={};for(const field of allFields){const val=values[field];if(val){const nc=candidates.filter(p=>strMatch(val,p[field]));if(nc.length>0){status[field]='match';candidates=nc;}else status[field]='mismatch';}else status[field]='empty';}for(const field of allFields){const se=document.getElementById(field+'-status'),ie=document.getElementById(field),s=status[field];if(s==='match'){se.className='field-status show match';se.textContent='✓ 信息匹配';if(ie){ie.classList.remove('mismatch');ie.classList.add('match');}}else if(s==='mismatch'){se.className='field-status show mismatch';se.textContent='✗ 填写错误，请与报名信息一致';if(ie){ie.classList.remove('match');ie.classList.add('mismatch');}}else{se.classList.remove('show');if(ie)ie.classList.remove('match','mismatch');}}updateRadio('trackGroup',values.track,status.track);let allFilled=true;for(const f of allFields)if(!values[f]){allFilled=false;break;}let exact=null;if(allFilled&&candidates.length===1){let ok=true;for(const f of allFields)if(!strMatch(values[f],candidates[0][f])){ok=false;break;}if(ok)exact=candidates[0];}const eb=document.getElementById('errorBanner');if(allFilled&&!exact)eb.classList.add('show');else eb.classList.remove('show');const btn=document.getElementById('submitBtn');if(exact){btn.disabled=false;matchedPlayer=exact;}else{btn.disabled=true;matchedPlayer=null;}}
+function updateRadio(gid,val,s){const g=document.getElementById(gid);g.querySelectorAll('.radio-option').forEach(o=>{o.classList.remove('match','mismatch');if(o.dataset.value===val){if(s==='match')o.classList.add('match');else if(s==='mismatch')o.classList.add('mismatch');}});}
+function submitForm(){if(!matchedPlayer)return;document.getElementById('formPage').classList.add('hide');document.getElementById('certPage').classList.add('show');const dn=matchedPlayer.passportName;document.getElementById('welcomeName').textContent=dn;const cc=document.getElementById('certContent');if(!matchedPlayer.certificates||matchedPlayer.certificates.length===0){cc.innerHTML='<div class="no-cert">暂未查询到您的电子证书，请联系组委会</div>';}else{let h='<div class="cert-grid">';matchedPlayer.certificates.forEach(function(c,idx){h+='<div class="cert-card" onclick="showCert('+idx+')"><div class="cert-img-wrap"><img src="'+c.img+'" alt="'+c.name+'" loading="lazy"></div><div class="cert-info"><div class="cert-name">'+c.name+'</div><div class="cert-desc">'+(c.desc||'')+'</div></div></div>';});h+='</div>';cc.innerHTML=h;}window.scrollTo(0,0);}
+function showCert(idx){const cert=matchedPlayer.certificates[idx];currentCert=cert;document.getElementById('modalCertName').textContent=cert.name;document.getElementById('modalCertImg').src=cert.img;document.getElementById('modalOverlay').classList.add('show');document.body.style.overflow='hidden';}
+function goBack(){document.getElementById('certPage').classList.remove('show');document.getElementById('formPage').classList.remove('hide');validateForm();}
+function closeModal(){document.getElementById('modalOverlay').classList.remove('show');document.body.style.overflow='';currentCert=null;}
+function closeModalOutside(e){if(e.target.id==='modalOverlay')closeModal();}
+function downloadPNG(){if(!currentCert)return;const a=document.createElement('a');a.href=currentCert.img;a.download=currentCert.name+'.png';a.target='_blank';document.body.appendChild(a);a.click();document.body.removeChild(a);}
+function downloadPDF(){if(!currentCert)return;const img=new Image();img.crossOrigin='anonymous';img.onload=function(){try{const {jsPDF}=window.jspdf;const pdf=new jsPDF({orientation:img.width>img.height?'landscape':'portrait',unit:'px',format:[img.width,img.height]});pdf.addImage(img,'PNG',0,0,img.width,img.height);pdf.save(currentCert.name+'.pdf');}catch(e){alert('PDF生成失败：'+e.message+'，请尝试下载PNG原图');}};img.onerror=function(){alert('证书图片加载失败，请尝试下载PNG原图');};img.src=currentCert.img;}
+validateForm();
+</script>
+</body>
+</html>
