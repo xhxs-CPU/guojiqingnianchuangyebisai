@@ -113,7 +113,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hira
 <div class="download-btns"><button class="download-btn png" onclick="downloadPNG()">下载原图（PNG）<br><span style="font-size:11px;opacity:.85">Download Original</span></button><button class="download-btn pdf" onclick="downloadPDF()">下载PDF版<br><span style="font-size:11px;opacity:.85">Download PDF</span></button></div></div></div></div>
 <div class="footer">© 2026 第一届国际青年创业大赛组织委员会<br>© 2026 International Youth Entrepreneurship Competition Organizing Committee</div>
 <script>
-const playerDatabase=[{"track":"直播赛道","passportName":"WANG GUORUI","chineseName":"王国蕊","passportNumber":"E12345678","nationality":"中国","status":"在读学生","university":"某某大学","grade":"大三","major":"国际经济与贸易","wechat":"wangguorui123","phone":"13800138001","email":"wangguorui@example.com","certificates":[{"name":"参赛证书","desc":"国际青年创业大赛参赛证明","img":"https://aka.doubaocdn.com/s/G8ZOpNO8Ni"}]}];
+const playerDatabase=[];
 const allFields=['track','passportName','passportNumber'];
 let formState={track:''},matchedPlayer=null,currentCert=null;
 function selectRadio(field,el){const g=el.parentElement;g.querySelectorAll('.radio-option').forEach(o=>o.classList.remove('selected'));el.classList.add('selected');el.querySelector('input').checked=true;formState[field]=el.dataset.value;validateForm();}
@@ -128,6 +128,8 @@ function closeModal(){document.getElementById('modalOverlay').classList.remove('
 function closeModalOutside(e){if(e.target.id==='modalOverlay')closeModal();}
 function downloadPNG(){if(!currentCert)return;const a=document.createElement('a');a.href=currentCert.img;a.download=currentCert.name+'.png';a.target='_blank';document.body.appendChild(a);a.click();document.body.removeChild(a);}
 function downloadPDF(){if(!currentCert)return;const img=new Image();img.crossOrigin='anonymous';img.onload=function(){try{const {jsPDF}=window.jspdf;const pdf=new jsPDF({orientation:img.width>img.height?'landscape':'portrait',unit:'px',format:[img.width,img.height]});pdf.addImage(img,'PNG',0,0,img.width,img.height);pdf.save(currentCert.name+'.pdf');}catch(e){alert('PDF生成失败：'+e.message+'，请尝试下载PNG原图 / PDF generation failed: '+e.message+'. Please try downloading the PNG original.');}};img.onerror=function(){alert('证书图片加载失败，请尝试下载PNG原图 / Failed to load certificate image. Please try downloading the PNG original.');};img.src=currentCert.img;}
+// 优先加载线上数据，失败则使用页面内置数据
+fetch('players.json?t='+Date.now(),{cache:'no-store'}).then(function(r){if(r.ok)return r.json();throw 0;}).then(function(data){if(Array.isArray(data)&&data.length){playerDatabase.length=0;data.forEach(function(p){playerDatabase.push(p);});validateForm();}}).catch(function(){});
 validateForm();
 </script>
 </body>
